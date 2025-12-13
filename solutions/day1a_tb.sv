@@ -1,88 +1,69 @@
 `timescale 1ns/1ps
 
-module tb_solution;
+module tb_processor;
 
-    logic clk = 0;
-    logic data_valid = 0;
-    logic [31:0] data;
-    logic [31:0] answer;
+    // DUT signals
+    reg         clk;
+    reg         rst;
+    reg         i_dataValid;
+    reg [31:0]  i_packet;
+    wire [31:0] o_answer;
 
     // Instantiate DUT
-    day1a dut (
+    processor dut (
         .clk(clk),
-        .data_valid(data_valid),
-        .data(data),
-        .answer(answer)
+        .rst(rst),
+        .i_dataValid(i_dataValid),
+        .i_packet(i_packet),
+        .o_answer(o_answer)
     );
 
-    // Clock generation (100 MHz)
+    // Clock generation: 10ns period
     always #5 clk = ~clk;
 
-    // integer fd; //file descriptor??
-    // string line;
-    // byte op_char;
-    // int  number;
+    // Task to send a packet
+    task send_packet;
+        input direction;        // 1 = R (add), 0 = L (sub)
+        input [30:0] value;
+        begin
+            @(posedge clk);
+            i_dataValid <= 1'b1;
+            i_packet    <= {direction, value};
 
-    // Convert text line → 32-bit packed data word
-    function automatic [31:0] pack_data(input byte op, input int num);
-        pack_data = {op, num[23:0]};  // op is 8 bits, num is 24 bits
-    endfunction
+            @(posedge clk);
+            i_dataValid <= 1'b0;
+            i_packet    <= 32'd0;
+        end
+    endtask
 
-    // initial begin
-    //     // Open file
-    //     fd = $fopen("../puzzle_inputs/day1a.txt", "r");
-    //     if (fd == 0) begin
-    //         $fatal("ERROR: Could not open input.txt");
-    //     end
-
-    //     $display("Starting simulation...");
-        
-    //     // Read each line while clocking data into DUT
-    //     while (!$feof(fd)) begin
-
-    //         // Read a line from file
-    //         void'($fgets(line, fd));
-
-    //         // Parse:   <char><integer>
-    //         // Example: "R26"
-    //         if ($sscanf(line, "%c%d", op_char, number) == 2) begin
-    //             @(posedge clk);
-    //             data       = pack_data(op_char, number);
-    //             data_valid = 1;
-
-    //             $display("Time %0t:  Read '%s' → op=%c num=%0d, packed=%h",
-    //                       $time, line, op_char, number, data);
-
-    //         end else begin
-    //             $display("WARNING: Could not parse line '%s'", line);
-    //         end
-
-    //     end
-
-    //     // Stop sending new data
-    //     @(posedge clk);
-    //     data_valid = 0;
-
-    //     // Let DUT run for a few more cycles
-    //     repeat (10) @(posedge clk);
-
-    //     $display("Final answer = %0d", answer);
-
-    //     $finish;
-    // end
-
-    initial begin 
-        data_valid = 1;
-        #5;
-        data = 32'h4c000044;
-        #10;
-        data = 32'h4c00001e;
-
-    end
-    // Waveform dump
     initial begin
-        $dumpfile("wave.vcd");
-        $dumpvars(0, tb_solution);
+      // VCD dump
+      $dumpfile("dump.vcd");
+      $dumpvars(0, tb_processor);
+
+      clk         = 0;
+      rst         = 1;
+      i_dataValid = 0;
+      i_packet    = 0;
+
+      repeat (3) @(posedge clk);
+      rst = 0;
+
+      send_packet(1'b0, 31'd68);
+      send_packet(1'b0, 31'd30);
+      send_packet(1'b1, 31'd48);
+      send_packet(1'b0, 31'd5);
+      send_packet(1'b1, 31'd60);
+      send_packet(1'b0, 31'd55);
+      send_packet(1'b0, 31'd1);
+      send_packet(1'b0, 31'd99);
+      send_packet(1'b1, 31'd14);
+      send_packet(1'b0, 31'd82);
+
+        // Wait a few cycles
+        repeat (5) @(posedge clk);
+
+        $finish;
     end
 
 endmodule
