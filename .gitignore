@@ -1,1 +1,4 @@
 .vscode
+cocotb_playground/_*
+cocotb_playground/.*
+cocotb_playground/sim_build
