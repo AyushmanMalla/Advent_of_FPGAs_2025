@@ -1,4 +1,4 @@
 .vscode
-cocotb_playground/_*
-cocotb_playground/.*
-cocotb_playground/sim_build
+tb/_*
+tb/.*
+tb/sim_build
