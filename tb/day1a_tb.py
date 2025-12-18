@@ -9,7 +9,7 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 MODULE_DIR = os.path.join(ROOT_DIR, "solutions")
 SOURCES = [os.path.join(MODULE_DIR, "day1a.v")]
 TOP_LEVEL = "processor"
-PUZZLE_PATH = os.path.join(ROOT_DIR, "puzzle_inputs\day1.txt")
+PUZZLE_PATH = os.path.join(ROOT_DIR, "puzzle_inputs/day1.txt")
 
 
 def parse_line(puzzleLine):
@@ -100,7 +100,8 @@ def test_my_design_runner():
     runner.build(
         sources=SOURCES,
         hdl_toplevel=TOP_LEVEL,
-        timescale=("1ns", "1ps")
+        timescale=("1ns", "1ps"),
+        always=True
     )
     runner.test(hdl_toplevel=TOP_LEVEL, test_module=Path(__file__).stem)
 
